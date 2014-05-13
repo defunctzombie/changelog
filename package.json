@@ -1,0 +1,13 @@
+{
+  "name": "changelog",
+  "version": "0.0.0",
+  "dependencies": {
+    "colors": "^0.6.2",
+    "commander": "2.2.0",
+    "moment": "2.6.0",
+    "shelljs": "0.3.0"
+  },
+  "bin": {
+    "changelog": "./bin/changelog"
+  }
+}

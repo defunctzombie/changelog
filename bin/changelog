@@ -1,0 +1,187 @@
+#!/usr/bin/env node
+var fs = require('fs');
+var path = require('path');
+
+var colors = require('colors');
+var program = require('commander');
+var moment = require('moment');
+var shell = require('shelljs');
+
+program
+.option('--init', 'initialize a new changelog')
+.option('--release [version]', 'change latest UNRELEASED changes into VERSION and tag for release')
+.option('--increment', 'bump version to UNRELEASED')
+.parse(process.argv);
+
+var basedir = process.cwd();
+
+// lowercase variations will be tried automatically
+var k_changelog_files = [
+    'history.md',
+    'History.md',
+    'HISTORY.md',
+    'HISTORY.MD',
+    'changelog.md',
+    'Changelog.md',
+    'CHANGELOG.md',
+    'CHANGELOG.MD'
+];
+
+k_changelog_files.forEach(function(file) {
+    k_changelog_files.push(file.toLowerCase());
+})
+
+if (program.init) {
+
+    k_changelog_files.forEach(function(file) {
+        if (fs.existsSync(path.join(basedir, file))) {
+            console.error('Error: Cannot initialize a new Changelog. %s already exists', file);
+            return process.exit(1);
+        }
+    });
+
+    var content = '# UNRELEASED\n\n  * initial\n\n';
+    var changelog_file = path.join(basedir, 'HISTORY.md');
+    fs.writeFileSync(changelog_file, content, { encoding: 'utf-8' });
+
+    console.log('Initialized changelog file %s', changelog_file);
+    return process.exit(0);
+}
+else if (program.release) {
+
+    var new_version = program.release;
+
+    var files = fs.readdirSync(basedir);
+
+    var changleog_file;
+    k_changelog_files.some(function(filename) {
+        var filepath = path.join(basedir, filename);
+        if (fs.existsSync(filepath) && files.indexOf(filename) >= 0) {
+            return changelog_file = filepath;
+        }
+        return false;
+    });
+
+    if (!changelog_file) {
+        console.error('no changelog file found');
+        return process.exit(1);
+    }
+
+    var pkg_filepath = path.join(basedir, 'package.json');
+    if (!fs.existsSync(pkg_filepath)) {
+        console.error('no package.json file found');
+        return process.exit(1);
+    }
+
+    var content = fs.readFileSync(changelog_file).toString();
+
+    var lines = content.split('\n');
+
+    //TODO if new version is < any old version, then abort (TODO ask user to confirm override)
+
+    // if first entry is not UNRELEASED then abort
+    var first = lines.shift();
+    if (!first || !/UNRELEASED/.test(first)) {
+        console.error('Cannot release. Already released.');
+        return process.exit(1);
+    }
+
+    // new first entry with released version
+    var date = moment();
+    first = '# ' + new_version + ' ' + date.format('(YYYY-MM-DD)');
+    lines.unshift(first);
+
+    // write out new changelog
+    var fd = fs.openSync(changelog_file, 'r+');
+    var buff = Buffer(lines.join('\n'));
+    fs.writeSync(fd, buff, 0, buff.length, 0);
+    fs.closeSync(fd);
+
+    // modify version in package.json
+    //    - first try to replace "version": "vvv" with new one
+    //    - second try to insert "version" field if there is no version field
+    //    - changes to package.json should be minimal diff impact
+    //    if cannot change... abort
+    var pkg_content = fs.readFileSync(pkg_filepath, 'utf-8');
+    var pkg = JSON.parse(pkg_content);
+    if (pkg.version) {
+        // TODO check that version is newer
+    }
+
+    // write out new package file
+    // TODO detect 2 or 4 spaces (or who cares?)
+    pkg.version = new_version;
+    var buff = Buffer(JSON.stringify(pkg, null, 2));
+    fs.writeFileSync(pkg_filepath, buff, 0, buff.length, 0);
+
+    // TODO if git commit fails, rollback versions
+
+    // commit message and tag name
+    var tag = 'v' + new_version;
+
+    var cmd = 'git add ' + changelog_file;
+    shell.exec(cmd); //, { silent: true })
+
+    var cmd = 'git add package.json';
+    shell.exec(cmd); //, { silent: true })
+
+    var cmd = 'git commit -m ' + tag;
+    shell.exec(cmd); //, { silent: true })
+
+    var cmd = 'git tag ' + tag;
+    shell.exec(cmd);
+
+    console.log('don\'t forget to run "git push && git push origin ' + tag + '"'.yellow);
+
+    return process.exit(0);
+}
+else if (program.increment) {
+    // bump to UNRELEASED in chagnelog
+
+    var files = fs.readdirSync(basedir);
+
+    var changleog_file;
+    k_changelog_files.some(function(filename) {
+        var filepath = path.join(basedir, filename);
+        if (fs.existsSync(filepath) && files.indexOf(filename) >= 0) {
+            return changelog_file = filepath;
+        }
+        return false;
+    });
+
+    if (!changelog_file) {
+        console.error('no changelog file found');
+        return process.exit(1);
+    }
+
+    var content = fs.readFileSync(changelog_file).toString();
+    var lines = content.split('\n');
+
+    // check if already on unreleased
+    var first = lines.shift();
+    if (!first || /UNRELEASED/.test(first)) {
+        return process.exit(0);
+    }
+
+    lines.unshift(first);
+
+    // prepend unreleased
+    first = '# UNRELEASED';
+    lines.unshift('');
+    lines.unshift(first);
+
+    // write out new changelog
+    var fd = fs.openSync(changelog_file, 'r+');
+    var buff = Buffer(lines.join('\n'));
+    fs.writeSync(fd, buff, 0, buff.length, 0);
+    fs.closeSync(fd);
+
+    var cmd = 'git add ' + changelog_file;
+    shell.exec(cmd); //, { silent: true })
+
+    // commit
+    var cmd = 'git commit -m "now working on UNRELEASED"';
+    shell.exec(cmd); //, { silent: true })
+}
+
+// vim: ft=javascript
