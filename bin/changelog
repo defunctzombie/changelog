@@ -131,7 +131,7 @@ else if (program.release) {
     var cmd = 'git tag ' + tag;
     shell.exec(cmd);
 
-    console.log('don\'t forget to run "git push && git push origin ' + tag + '"'.yellow);
+    console.log(('don\'t forget to run "git push && git push origin ' + tag + '"').yellow);
 
     return process.exit(0);
 }
