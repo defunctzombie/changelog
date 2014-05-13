@@ -13,7 +13,7 @@ Currently workflows do not put enough emphasis on the changelog. Developers will
 ### install the changelog tool
 
 ```shell
-npm install -g changelog
+npm install -g defunctzombie/changelog
 ```
 
 ### create an empty initial changelog
