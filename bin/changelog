@@ -176,12 +176,15 @@ else if (program.increment) {
     fs.writeSync(fd, buff, 0, buff.length, 0);
     fs.closeSync(fd);
 
+    // TODO option to commit just the history change?
+    /*
     var cmd = 'git add ' + changelog_file;
     shell.exec(cmd); //, { silent: true })
 
     // commit
-    var cmd = 'git commit -m "now working on UNRELEASED"';
+    var cmd = 'git commit -m "now working on UNRELEASED" ' + changelog_file;
     shell.exec(cmd); //, { silent: true })
+    */
 }
 
 // vim: ft=javascript
