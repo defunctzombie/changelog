@@ -4,7 +4,7 @@ A tool for updating project changelogs and package.json files for new releases.
 
 ## Why?
 
-Having a changelog (or history) file in a project helps you communicate to your users (developers) which changes you find most important to a release. Obviously the commit history is always available, but is often filled with noise. The changelog is a noise free place to highlight thee major changes in a more summarized and human readable form.
+Having a changelog (or history) file in a project helps you communicate to your users (developers) which changes you find most important to a release. Obviously the commit history is always available, but is often filled with noise. The changelog is a noise free place to highlight these major changes in a more summarized and human readable form.
 
 Currently workflows do not put enough emphasis on the changelog. Developers will often make a series of commits and then just bump the version in package.json. By centering the versioning workflow around the changelog, I hope to encourage more modules to keep an updated history.
 
