@@ -6,10 +6,11 @@ var colors = require('colors');
 var program = require('commander');
 var moment = require('moment');
 var shell = require('shelljs');
+var semver = require('semver');
 
 program
 .option('--init', 'initialize a new changelog')
-.option('--release [version]', 'change latest UNRELEASED changes into VERSION and tag for release')
+.option('--release [version]', 'change latest UNRELEASED changes into VERSION and tag for release (supports specifying exact version or major, minor, patch)')
 .option('--increment', 'bump version to UNRELEASED')
 .parse(process.argv);
 
@@ -51,6 +52,8 @@ else if (program.release) {
 
     var new_version = program.release;
 
+    var valid_release_versions = ['major', 'premajor', 'minor', 'preminor', 'patch', 'prepatch', 'prerelease'];
+
     var files = fs.readdirSync(basedir);
 
     var changleog_file;
@@ -86,17 +89,6 @@ else if (program.release) {
         return process.exit(1);
     }
 
-    // new first entry with released version
-    var date = moment();
-    first = '# ' + new_version + ' ' + date.format('(YYYY-MM-DD)');
-    lines.unshift(first);
-
-    // write out new changelog
-    var fd = fs.openSync(changelog_file, 'r+');
-    var buff = Buffer(lines.join('\n'));
-    fs.writeSync(fd, buff, 0, buff.length, 0);
-    fs.closeSync(fd);
-
     // modify version in package.json
     //    - first try to replace "version": "vvv" with new one
     //    - second try to insert "version" field if there is no version field
@@ -107,6 +99,25 @@ else if (program.release) {
     if (pkg.version) {
         // TODO check that version is newer
     }
+
+    if (valid_release_versions.indexOf(new_version) >= 0) {
+        if (!pkg.version) {
+            console.error('cannot use releaes name if there is no version in package.json');
+            return process.exit(1);
+        }
+        new_version = semver.inc(pkg.version, new_version);
+    }
+
+    // new first entry with released version
+    var date = moment();
+    first = '# ' + new_version + ' ' + date.format('(YYYY-MM-DD)');
+    lines.unshift(first);
+
+    // write out new changelog
+    var fd = fs.openSync(changelog_file, 'r+');
+    var buff = Buffer(lines.join('\n'));
+    fs.writeSync(fd, buff, 0, buff.length, 0);
+    fs.closeSync(fd);
 
     // write out new package file
     // TODO detect 2 or 4 spaces (or who cares?)
