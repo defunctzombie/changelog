@@ -1,4 +1,4 @@
-# UNRELEASED
+# 0.2.0 (2015-08-12)
 
   * add support for --release [major, minor, patch]
   * don't automatically commit on --increment
