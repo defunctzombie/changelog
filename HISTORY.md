@@ -1,5 +1,6 @@
 # UNRELEASED
 
+  * add support for --release [major, minor, patch]
   * don't automatically commit on --increment
 
 # 0.1.0 (2014-05-13)
