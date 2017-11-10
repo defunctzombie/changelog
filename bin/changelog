@@ -123,7 +123,7 @@ else if (program.release) {
     // TODO detect 2 or 4 spaces (or who cares?)
     pkg.version = new_version;
     var buff = Buffer(JSON.stringify(pkg, null, 2));
-    fs.writeFileSync(pkg_filepath, buff, 0, buff.length, 0);
+    fs.writeFileSync(pkg_filepath, buff);
 
     // TODO if git commit fails, rollback versions
 
