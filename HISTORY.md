@@ -1,3 +1,7 @@
+# UNRELEASED
+
+  * add compat for node 8 LTS
+
 # 0.2.0 (2015-08-12)
 
   * add support for --release [major, minor, patch]
