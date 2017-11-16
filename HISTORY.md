@@ -1,4 +1,4 @@
-# UNRELEASED
+# 1.0.0 (2017-11-15)
 
   * add compat for node 8 LTS
 

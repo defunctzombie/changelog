@@ -1,6 +1,6 @@
 {
   "name": "changelog",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "dependencies": {
     "colors": "0.6.2",
     "commander": "2.2.0",
